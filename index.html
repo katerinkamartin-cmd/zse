@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analýza Elektromerov | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 for dark analytical theme */
+            color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .code-block {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: monospace;
+            overflow-x: auto;
+            color: #c9d1d9;
+        }
+        .keyword { color: #ff7b72; }
+        .string { color: #a5d6ff; }
+        .comment { color: #8b949e; font-style: italic; }
+        .function { color: #d2a8ff; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <!-- Header -->
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                <i class="fas fa-bolt mr-2"></i>Analýza Elektromerov
+            </h1>
+            <p class="text-slate-400 mt-2">Identifikácia porúch a anomálií v distribučnej sieti</p>
+        </div>
+        <div class="glass-panel px-4 py-2 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
+                <i class="fas fa-user-astronaut text-blue-400"></i>
+            </div>
+            <div>
+                <p class="text-sm text-slate-400">Vypracoval/a</p>
+                <p class="font-semibold text-sm">Kora (pre Martina)</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Executive Summary KPIs -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Critical KPI -->
+        <div class="glass-panel p-6 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-500"></div>
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Kritická Chyba</p>
+                    <h3 class="text-2xl font-bold text-red-400 mt-1">ID: 61609</h3>
+                    <p class="text-xs text-slate-500 mt-1">Typ: SX5A2</p>
+                </div>
+                <div class="p-3 bg-red-500/20 rounded-lg text-red-400">
+                    <i class="fas fa-exclamation-triangle text-xl"></i>
+                </div>
+            </div>
+            <p class="text-sm"><span class="font-semibold text-white">Diagnóza:</span> Prerušený nulový vodič (Floating Neutral)</p>
+            <p class="text-sm mt-1 text-red-300 font-mono text-xs bg-red-950/50 p-1 rounded inline-block">L1 > 290V | L2 < 160V</p>
+            <div class="mt-4 pt-4 border-t border-slate-700/50">
+                <p class="text-sm font-semibold text-red-400"><i class="fas fa-truck-fast mr-1"></i> Akcia: Okamžitý výjazd technika</p>
+            </div>
+        </div>
+
+        <!-- OK KPI -->
+        <div class="glass-panel p-6 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-500"></div>
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">V Norme</p>
+                    <h3 class="text-2xl font-bold text-emerald-400 mt-1">ID: 77006</h3>
+                    <p class="text-xs text-slate-500 mt-1">Typ: SX5A2</p>
+                </div>
+                <div class="p-3 bg-emerald-500/20 rounded-lg text-emerald-400">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+            </div>
+            <p class="text-sm"><span class="font-semibold text-white">Stav:</span> Bežná prevádzka</p>
+            <p class="text-sm mt-1 text-emerald-300">Všetky parametre napätia a prúdu sú v norme.</p>
+            <div class="mt-4 pt-4 border-t border-slate-700/50">
+                <p class="text-sm font-semibold text-emerald-400"><i class="fas fa-shield-check mr-1"></i> Akcia: Bez zásahu</p>
+            </div>
+        </div>
+
+        <!-- High Consumption KPI -->
+        <div class="glass-panel p-6 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-500"></div>
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Vysoký Odber</p>
+                    <h3 class="text-2xl font-bold text-blue-400 mt-1">ID: 506273</h3>
+                    <p class="text-xs text-slate-500 mt-1">Typ: LZQJE5</p>
+                </div>
+                <div class="p-3 bg-blue-500/20 rounded-lg text-blue-400">
+                    <i class="fas fa-industry text-xl"></i>
+                </div>
+            </div>
+            <p class="text-sm"><span class="font-semibold text-white">Stav:</span> Stabilné napätie, vysoké prúdy</p>
+            <p class="text-sm mt-1 text-blue-300">Pravdepodobne štandardný priemyselný odber.</p>
+            <div class="mt-4 pt-4 border-t border-slate-700/50">
+                <p class="text-sm font-semibold text-blue-400"><i class="fas fa-eye mr-1"></i> Akcia: Monitorovať prúdové špičky</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualizations -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Voltage Chart -->
+        <div class="glass-panel p-6">
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-chart-line mr-2 text-blue-400"></i> Asymetria Napätia (Modelový priebeh pre ID 61609)
+            </h3>
+            <div class="relative h-64 w-full">
+                <canvas id="voltageChart"></canvas>
+            </div>
+            <p class="text-xs text-slate-400 mt-4 text-center">Zobrazenie preukazuje kritickú asymetriu fáz spôsobenú plávajúcou nulou. Dôkaz: L1 > 290V, L2 < 160V.</p>
+        </div>
+
+        <!-- Status Distribution Chart -->
+        <div class="glass-panel p-6">
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-chart-pie mr-2 text-emerald-400"></i> Distribúcia stavov elektromerov
+            </h3>
+            <div class="relative h-64 w-full flex justify-center">
+                <canvas id="distributionChart"></canvas>
+            </div>
+            <div class="flex justify-center gap-6 mt-4">
+                <div class="flex items-center gap-2 text-sm"><span class="w-3 h-3 rounded-full bg-red-500"></span> Kritické</div>
+                <div class="flex items-center gap-2 text-sm"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Normál</div>
+                <div class="flex items-center gap-2 text-sm"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Priemysel</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Analysis & Code -->
+    <section class="glass-panel p-6 mb-8">
+        <h3 class="text-xl font-semibold mb-6 border-b border-slate-700 pb-2">
+            <i class="fas fa-code mr-2 text-purple-400"></i> Technické riešenia a logika detekcie
+        </h3>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- SQL -->
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between bg-slate-800/80 px-4 py-2 rounded-t-lg border-b border-slate-700">
+                    <span class="font-semibold text-blue-300"><i class="fas fa-database mr-2"></i>SQL</span>
+                </div>
+                <div class="code-block rounded-t-none flex-grow text-xs leading-relaxed">
+<span class="comment">-- Vytvorenie tabuľky</span>
+<span class="keyword">CREATE TABLE</span> meter_data (
+  timestamp_local <span class="keyword">TIMESTAMP</span>,
+  meter_id <span class="keyword">VARCHAR</span>(20),
+  meter_type <span class="keyword">VARCHAR</span>(20),
+  u_l1 <span class="keyword">FLOAT</span>, u_l2 <span class="keyword">FLOAT</span>, u_l3 <span class="keyword">FLOAT</span>,
+  i_l1 <span class="keyword">FLOAT</span>, i_l2 <span class="keyword">FLOAT</span>, i_l3 <span class="keyword">FLOAT</span>,
+  consumption <span class="keyword">FLOAT</span>
+);
+
+<span class="comment">-- Detekcia anomálií (Business Logic)</span>
+<span class="keyword">SELECT</span>
+  meter_id,
+  <span class="keyword">CASE</span>
+    <span class="keyword">WHEN</span> (u_l1 > 253 <span class="keyword">OR</span> u_l2 > 253 <span class="keyword">OR</span> u_l3 > 253) <span class="keyword">THEN</span> <span class="string">'CRITICAL: Overvoltage'</span>
+    <span class="keyword">WHEN</span> (u_l1 < 207 <span class="keyword">OR</span> u_l2 < 207 <span class="keyword">OR</span> u_l3 < 207) <span class="keyword">THEN</span> <span class="string">'CRITICAL: Undervoltage'</span>
+    <span class="keyword">WHEN</span> (i_l1 = 0 <span class="keyword">AND</span> i_l2 = 0 <span class="keyword">AND</span> i_l3 = 0) <span class="keyword">THEN</span> <span class="string">'INFO: No Consumption'</span>
+    <span class="keyword">ELSE</span> <span class="string">'OK'</span>
+  <span class="keyword">END as</span> status,
+  <span class="function">ROUND</span>(<span class="function">AVG</span>(u_l1)::<span class="keyword">numeric</span>, 2) <span class="keyword">as</span> avg_u1,
+  <span class="function">ROUND</span>(<span class="function">AVG</span>(u_l2)::<span class="keyword">numeric</span>, 2) <span class="keyword">as</span> avg_u2,
+  <span class="function">ROUND</span>(<span class="function">AVG</span>(u_l3)::<span class="keyword">numeric</span>, 2) <span class="keyword">as</span> avg_u3
+<span class="keyword">FROM</span> meter_data
+<span class="keyword">GROUP BY</span> meter_id, status
+<span class="keyword">ORDER BY</span> status <span class="keyword">DESC</span>;
+                </div>
+            </div>
+
+            <!-- Python -->
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between bg-slate-800/80 px-4 py-2 rounded-t-lg border-b border-slate-700">
+                    <span class="font-semibold text-yellow-300"><i class="fab fa-python mr-2"></i>Python (Pandas)</span>
+                </div>
+                <div class="code-block rounded-t-none flex-grow text-xs leading-relaxed">
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+
+<span class="keyword">def</span> <span class="function">analyze_meters</span>(df):
+    <span class="comment"># Logika pre detekciu plávajúcej nuly</span>
+    <span class="comment"># Ak je rozdiel medzi min a max napätím na fázach > 50V</span>
+    
+    df[<span class="string">'voltage_diff'</span>] = df[[<span class="string">'u_l1'</span>, <span class="string">'u_l2'</span>, <span class="string">'u_l3'</span>]].max(axis=<span class="keyword">1</span>) - \
+                         df[[<span class="string">'u_l1'</span>, <span class="string">'u_l2'</span>, <span class="string">'u_l3'</span>]].min(axis=<span class="keyword">1</span>)
+    
+    critical_mask = df[<span class="string">'voltage_diff'</span>] > <span class="keyword">50</span>
+    
+    <span class="keyword">if</span> critical_mask.any():
+        <span class="keyword">return</span> <span class="string">"CRITICAL ERROR: Floating Neutral Detected"</span>
+    
+    <span class="keyword">return</span> <span class="string">"OK"</span>
+                </div>
+            </div>
+
+            <!-- R -->
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between bg-slate-800/80 px-4 py-2 rounded-t-lg border-b border-slate-700">
+                    <span class="font-semibold text-blue-400"><i class="fab fa-r-project mr-2"></i>R (dplyr)</span>
+                </div>
+                <div class="code-block rounded-t-none flex-grow text-xs leading-relaxed">
+<span class="function">library</span>(dplyr)
+
+<span class="comment"># Načítanie a analýza</span>
+df %>%
+  <span class="function">group_by</span>(meter_id) %>%
+  <span class="function">summarise</span>(
+    max_voltage = <span class="function">max</span>(<span class="function">c</span>(<span class="function">max</span>(u_l1), <span class="function">max</span>(u_l2), <span class="function">max</span>(u_l3))),
+    min_voltage = <span class="function">min</span>(<span class="function">c</span>(<span class="function">min</span>(u_l1), <span class="function">min</span>(u_l2), <span class="function">min</span>(u_l3)))
+  ) %>%
+  <span class="function">mutate</span>(
+    status = <span class="function">case_when</span>(
+      max_voltage > <span class="keyword">253</span> | min_voltage < <span class="keyword">207</span> ~ <span class="string">"CRITICAL"</span>,
+      <span class="keyword">TRUE</span> ~ <span class="string">"OK"</span>
+    )
+  )
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center text-slate-500 text-sm mt-8 pb-4">
+        <p>&copy; 2026 Analýza generovaná pre účely vizualizácie. Navrhnuté logicky a synergicky. Typológia INTP v praxi.</p>
+    </footer>
+
+    <!-- Scripts for Charts -->
+    <script>
+        // Chart.js Default Configs for Dark Theme
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // 1. Voltage Asymmetry Chart (Line/Bar mixed)
+        const ctxVoltage = document.getElementById('voltageChart').getContext('2d');
+        
+        // Simulating data points over time based on the "Floating Neutral" proof: L1 > 290V, L2 < 160V
+        const timeLabels = ['08:00', '08:15', '08:30', '08:45', '09:00', '09:15', '09:30'];
+        const l1Data = [232, 235, 292, 295, 298, 291, 294]; // L1 goes critically high
+        const l2Data = [229, 227, 158, 155, 152, 157, 154]; // L2 goes critically low
+        const l3Data = [231, 230, 233, 231, 229, 234, 232]; // L3 stays relatively normal
+
+        new Chart(ctxVoltage, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [
+                    {
+                        label: 'Fáza L1 (V)',
+                        data: l1Data,
+                        borderColor: '#ef4444', // Red for dangerous high
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Fáza L2 (V)',
+                        data: l2Data,
+                        borderColor: '#3b82f6', // Blue for dangerous low
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Fáza L3 (V)',
+                        data: l3Data,
+                        borderColor: '#10b981', // Green for normal
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.3,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#cbd5e1',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                yMin: 253,
+                                yMax: 253,
+                                borderColor: 'rgba(239, 68, 68, 0.5)',
+                                borderWidth: 1,
+                                borderDash: [2, 2],
+                                label: { content: 'Max Limit (253V)', enabled: true, position: 'end' }
+                            },
+                            line2: {
+                                type: 'line',
+                                yMin: 207,
+                                yMax: 207,
+                                borderColor: 'rgba(59, 130, 246, 0.5)',
+                                borderWidth: 1,
+                                borderDash: [2, 2],
+                                label: { content: 'Min Limit (207V)', enabled: true, position: 'end' }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 100,
+                        max: 350,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Status Distribution Chart (Doughnut)
+        const ctxDist = document.getElementById('distributionChart').getContext('2d');
+        new Chart(ctxDist, {
+            type: 'doughnut',
+            data: {
+                labels: ['Kritická Chyba (61609)', 'V Norme (77006)', 'Priemyselný odber (506273)'],
+                datasets: [{
+                    data: [1, 1, 1], // Equal distribution based on 3 analyzed cases
+                    backgroundColor: [
+                        '#ef4444', // Red
+                        '#10b981', // Emerald
+                        '#3b82f6'  // Blue
+                    ],
+                    borderColor: '#0f172a',
+                    borderWidth: 4,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false // Custom legend below chart
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#cbd5e1',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
